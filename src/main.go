@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"bytes"
+	"reflect"
 	"encoding/json"
 	"github.com/hpcloud/tail"
 )
@@ -31,31 +32,59 @@ func isReadable(path string) (bool) {
 	return true
 }
 
-func displayLine(line *tail.Line, showDate bool) (error) {
-	if line.Err != nil {
-		return line.Err;
+func displayLine(line *tail.Line, showDate bool, fieldToRemovedList []string) (error) {
+	if line.Err != nil { return line.Err;}
+
+	// only in case decoded is an object
+	var lineBuffer *bytes.Buffer;
+	var err error;
+	if len(fieldToRemovedList) > 0 && line.Text[0] == '{' {
+		lineBuffer, err = prettifyJsonObject(line.Text);
+	} else {
+		lineBuffer, err = prettifyJsonString(line.Text);
 	}
+	if err != nil { return err; }
 
 	if showDate == true {
 		fmt.Printf("[%s]", line.Time)
 	}
-
-	parsedContent, err := jsonParser(line.Text);
-
-	if err != nil {
-		return err;
-	}
-
-	parsedContent.WriteTo(os.Stdout);
-	fmt.Printf("\n")
+	lineBuffer.WriteTo(os.Stdout);
+	fmt.Printf("\n");
 
 	return nil;
 }
 
-func jsonParser (line string) (*bytes.Buffer, error) {
+func prettifyJsonObject(encoded string) (*bytes.Buffer, error) {
+	//decoded, err := decodeJsonObject(encoded);
+	//if err != nil { return nil, err; }
+
+	//printFields(decoded);
+
+	return prettifyJsonString(encoded);
+
+}
+
+func printFields(b *interface{}) {
+	val := reflect.ValueOf(b)
+	for i := 0; i < val.Type().NumField(); i++ {
+		fmt.Println(val.Type().Field(i).Name)
+	}
+}
+
+func decodeJsonObject(encoded string) (*interface{}, error) {
+	var decoded interface{};
+	err := json.Unmarshal([]byte(encoded), &decoded);
+	if err != nil {
+		return nil, err;
+	}
+
+	return &decoded, nil;
+}
+
+func prettifyJsonString (encoded string) (*bytes.Buffer, error) {
 	var decoded bytes.Buffer;
 
-	if err := json.Indent(&decoded, []byte(line), "", "  "); err != nil {
+	if err := json.Indent(&decoded, []byte(encoded), "", "  "); err != nil {
 		return nil, err;
 	}
 
@@ -105,8 +134,11 @@ func main() {
 		os.Exit(3)
 	}
 
+	var fieldToRemoveList []string;
+	fieldToRemoveList[0] = "plop";
+
 	for line := range fileLineStream.Lines {
-		err := displayLine(line, showDate)
+		err := displayLine(line, showDate, fieldToRemoveList)
 		if err != nil {
 			fmt.Printf("Error during line display: %s =>%s\n", line.Text, err)
 		}
