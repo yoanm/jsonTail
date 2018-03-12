@@ -2,8 +2,8 @@ PACKAGE=jsonTail
 
 default: build
 
-build: src/*.go
+build: main.go
 	go build \
 	    -tags release \
         -o bin/$(PACKAGE) \
-        src/main.go
+        main.go
