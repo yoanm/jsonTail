@@ -1,16 +1,15 @@
 # jsonTail
 tail command for json log file
 
-## How to use
-`jsonTail` require [`github.com/hpcloud/tail`](https://github.com/hpcloud/tail/blob/master/tail.go).
-You need to execute following command to install it : 
+## How to install
+Retrieve last version
 ```bash
-go get github.com/hpcloud/tail
+go get github.com/yoanm/jsonTail
 ```
 
-Then, run following command to create `bin/jsonTail` binary
+Then, install it
 ```bash
-make build
+go install github.com/yoanm/jsonTail
 ```
 
 ## Options
