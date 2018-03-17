@@ -35,7 +35,7 @@ jsonTail --help
    
    See [`github.com/tidwall/gjson` path syntac](https://github.com/tidwall/gjson#path-syntax) for more information about paths
 
- * `-exclude FIELD` : will excluded specified field from output. Multiple fields could be specified by using multiple `-exclude`.
+ * `-exclude FIELD` : will exclude specified field from output. Multiple fields could be specified by using multiple `-exclude`.
    
    Field matching is made thanks to `github.com/tidwall/sjson` package.
    
