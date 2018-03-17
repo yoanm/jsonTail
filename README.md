@@ -30,11 +30,15 @@ jsonTail --help
 **Fields matching or exclusion only work with objects**
 
  * `-only FIELD` : will output only specified field. Multiple fields could be specified by using multiple `-only`.
+   
    Field matching is made thanks to `github.com/tidwall/gjson` package.
+   
    See [`github.com/tidwall/gjson` path syntac](https://github.com/tidwall/gjson#path-syntax) for more information about paths
 
  * `-exclude FIELD` : will excluded specified field from output. Multiple fields could be specified by using multiple `-exclude`.
+   
    Field matching is made thanks to `github.com/tidwall/sjson` package.
+   
    See [`github.com/tidwall/sjson` path syntac](https://github.com/tidwall/sjson#path-syntax) for more information about paths
    
 
