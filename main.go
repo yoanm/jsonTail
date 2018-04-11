@@ -105,6 +105,7 @@ type JsonTailOptions struct {
 	ShowDate bool;
 	ExcludedFieldList ArrayStringFlag;
 	OnlyFieldList ArrayStringFlag;
+	Location *tail.SeekInfo
 }
 
 func (this *JsonTailOptions) CheckIntegrity() (errorMessage string, code int) {
@@ -184,6 +185,15 @@ func main() {
 
 	message, code := options.CheckIntegrity();
 
+	options.Location = &tail.SeekInfo{
+		Offset: 0,
+		Whence: os.SEEK_SET,
+	}
+
+	if (true == options.FollowFile) {
+		options.Location.Whence = os.SEEK_END;
+	}
+
 	if (code != 0) {
 		fmt.Printf(message)
 		os.Exit(code)
@@ -194,6 +204,8 @@ func main() {
 		tail.Config{
 			Follow: (options.FollowFile || options.ReopenFile),
 			ReOpen: (options.FollowFile && options.ReopenFile),
+			Location: options.Location,
+			Logger: tail.DiscardingLogger,
 		});
 
 	if err != nil {
