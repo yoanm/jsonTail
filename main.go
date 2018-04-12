@@ -108,6 +108,29 @@ type JsonTailOptions struct {
 	Location *tail.SeekInfo
 }
 
+func newJsonTailOptions() (JsonTailOptions) {
+	var options JsonTailOptions;
+
+	options.Location = &tail.SeekInfo{
+		Offset: 0,
+		Whence: os.SEEK_SET,
+	}
+
+	return options;
+}
+
+func (this *JsonTailOptions) preProcess() {
+	// If reopen file option is set (-F), set also follow file (-f)
+	if (*this).ReopenFile {
+		(*this).FollowFile = true;
+	}
+
+	// If follow file is set, start at end (too difficult to find the last N lines)
+	if (*this).FollowFile {
+		(*this).Location.Whence = os.SEEK_END;
+	}
+}
+
 func (this *JsonTailOptions) CheckIntegrity() (errorMessage string, code int) {
 	// Check if given file exist
 	_, err := os.Stat((*this).FilePath);
@@ -171,7 +194,7 @@ func displayLine(line *tail.Line, options JsonTailOptions) (err error) {
 
 func main() {
 
-	var options JsonTailOptions;
+	options := newJsonTailOptions();
 
 	flag.Var(&(options.OnlyFieldList), "only", "Only output this field (multiple flag allow). Take predescence over --exclude")
 	flag.Var(&(options.ExcludedFieldList), "exclude", "Field to exclude (multiple flag allow)")
@@ -183,16 +206,8 @@ func main() {
 
 	options.FilePath = flag.Arg(0);
 
+	options.preProcess();
 	message, code := options.CheckIntegrity();
-
-	options.Location = &tail.SeekInfo{
-		Offset: 0,
-		Whence: os.SEEK_SET,
-	}
-
-	if (true == options.FollowFile) {
-		options.Location.Whence = os.SEEK_END;
-	}
 
 	if (code != 0) {
 		fmt.Printf(message)
@@ -202,8 +217,8 @@ func main() {
 	fileLineStream, err := tail.TailFile(
 		options.FilePath,
 		tail.Config{
-			Follow: (options.FollowFile || options.ReopenFile),
-			ReOpen: (options.FollowFile && options.ReopenFile),
+			Follow: options.FollowFile,
+			ReOpen: options.ReopenFile,
 			Location: options.Location,
 			Logger: tail.DiscardingLogger,
 		});
